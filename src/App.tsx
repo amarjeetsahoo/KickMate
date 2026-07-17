@@ -218,6 +218,10 @@ export default function App() {
         onBack={() => { setSosOpen(false); setCameraOpen(false); }}
         hasUnread={hasUnread}
         onToggleNotifications={() => setShowNotifications(!showNotifications)}
+        onProfileClick={() => {
+          storage.setLoggedIn(false);
+          setAppState('landing');
+        }}
       />
 
       {/* Main Content */}

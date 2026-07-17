@@ -31,16 +31,28 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed', top: 'var(--header-height)', right: 0,
-        width: '100%', maxWidth: '360px', height: 'calc(100vh - var(--header-height))',
-        background: 'var(--bg-surface)', borderLeft: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-lg)', zIndex: 1000, display: 'flex', flexDirection: 'column'
-      }}
-      role="region"
-      aria-label="Notification center"
-    >
+    <>
+      {/* Backdrop overlay */}
+      <div 
+        style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)', zIndex: 999, backdropFilter: 'blur(2px)'
+        }}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      
+      {/* Popup Modal */}
+      <div
+        style={{
+          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: '90%', maxWidth: '360px', maxHeight: '80vh',
+          background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-xl)', zIndex: 1000, display: 'flex', flexDirection: 'column'
+        }}
+        role="dialog"
+        aria-label="Notification center"
+      >
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -83,7 +95,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
       </div>
 
       {/* List */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }} role="log" aria-live="polite">
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '12px' }} role="log" aria-live="polite">
         {notifications.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
             <p className="text-sm">No new notifications</p>
@@ -134,5 +146,6 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
         )}
       </div>
     </div>
+    </>
   );
 }

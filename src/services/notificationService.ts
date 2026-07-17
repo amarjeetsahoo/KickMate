@@ -40,6 +40,38 @@ let activeNotifications: AppNotification[] = [
     message: 'Enjoy the Brazil vs Argentina clash. Use KickMate for all your navigation and translation needs.',
     timestamp: new Date(Date.now() - 3600_000),
     read: false,
+  },
+  {
+    id: 'notif-2',
+    type: 'warning',
+    title: 'Concourse Rush Warning',
+    message: 'Halftime food court queues are currently long near Section 112. Try concessions near Section 120.',
+    timestamp: new Date(Date.now() - 1800_000),
+    read: false,
+  },
+  {
+    id: 'notif-3',
+    type: 'success',
+    title: 'Parking Spot Saved',
+    message: 'Your vehicle in Lot A North, Bay 14 has been recorded. KickMate Navigator will guide you back.',
+    timestamp: new Date(Date.now() - 900_000),
+    read: false,
+  },
+  {
+    id: 'notif-4',
+    type: 'alert',
+    title: 'Gate A Congestion',
+    message: 'Gate A is experiencing high entry queues. We recommend entering through Gate C which is 80% clearer.',
+    timestamp: new Date(Date.now() - 300_000),
+    read: false,
+  },
+  {
+    id: 'notif-5',
+    type: 'info',
+    title: 'Live Updates Enabled',
+    message: 'You will receive real-time updates for goals, cards, and VAR decisions for this match.',
+    timestamp: new Date(Date.now() - 60_000),
+    read: false,
   }
 ];
 

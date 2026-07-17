@@ -1,4 +1,4 @@
-import { Moon, Sun, User, Bell } from 'lucide-react';
+import { Moon, Sun, LogOut, Bell } from 'lucide-react';
 import type { Theme } from '../../types';
 
 interface AppHeaderProps {
@@ -10,6 +10,7 @@ interface AppHeaderProps {
   onBack?: () => void;
   hasUnread?: boolean;
   onToggleNotifications?: () => void;
+  onProfileClick?: () => void;
 }
 
 export function AppHeader({
@@ -20,7 +21,8 @@ export function AppHeader({
   subtitle,
   onBack,
   hasUnread = false,
-  onToggleNotifications
+  onToggleNotifications,
+  onProfileClick
 }: AppHeaderProps) {
   return (
     <header className="app-header" role="banner">
@@ -78,8 +80,8 @@ export function AppHeader({
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
         {!showBack && (
-          <button id="header-profile-btn" className="btn btn-icon" aria-label="User profile">
-            <User size={18} />
+          <button id="header-profile-btn" className="btn btn-icon" aria-label="Log out" onClick={onProfileClick}>
+            <LogOut size={18} />
           </button>
         )}
       </div>
