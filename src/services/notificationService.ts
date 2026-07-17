@@ -137,7 +137,7 @@ export const notificationService = {
         const parsed = JSON.parse(res.text.replace(/```json|```/g, '').trim());
         translatedTitle = parsed.title || translatedTitle;
         translatedMessage = parsed.message || translatedMessage;
-      } catch (e) {
+      } catch {
         // Fallback to original
       }
     }

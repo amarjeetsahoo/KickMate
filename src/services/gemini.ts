@@ -16,8 +16,9 @@ const MAX_PROMPT_LENGTH = 2000;
  */
 function sanitizeInput(input: string): string {
   return input
-    // Remove ASCII control characters (0x00-0x1F) except common whitespace
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Remove ASCII control characters (0x00-0x08, 0x0B, 0x0C, 0x0E-0x1F, 0x7F) except common whitespace
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
     .trim()
     .slice(0, MAX_PROMPT_LENGTH);
 }

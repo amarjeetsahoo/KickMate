@@ -59,10 +59,6 @@ export function ConcourseStreetView({
   accessibleOnly,
   onFallbackTo2D
 }: ConcourseStreetViewProps) {
-  // Read props to ensure compiler is satisfied
-  if (routeSteps.length === -1 && accessibleOnly) {
-    console.log('Dummy log statement for TypeScript');
-  }
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [panAngle, setPanAngle] = useState(180); // Start looking straight ahead (180 deg)
@@ -228,7 +224,7 @@ export function ConcourseStreetView({
 
     render();
     return () => cancelAnimationFrame(animId);
-  }, [panAngle, scene]);
+  }, [panAngle, scene, sceneIdx]);
 
   // Pointer event handlers for panning
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -301,10 +297,21 @@ export function ConcourseStreetView({
           <h3 className="h3" style={{ fontSize: '0.95rem' }}>Visual Street View Route Guidance</h3>
         </div>
         <p className="text-xs text-muted" style={{ lineHeight: 1.4 }}>
-          {activeStepIndex === 0 && '🚦 Entrance Checkpoint: Proceed through Security lanes. Confirm wheelchair lane clearance on the right.'}
-          {activeStepIndex === 1 && '🛒 Escalator Deck: Use the lift corridor just past Food Court 2 to ascend to Level 2 Concourse.'}
-          {activeStepIndex === 2 && '🚪 Section Corridor: Section 114 entry deck is situated 25m past the First Aid medical station.'}
-          {activeStepIndex >= 3 && '⚽ Seating View: Your seat at Row C is adjacent to the main wheelchair platforms looking at the center circle.'}
+          {routeSteps && routeSteps[activeStepIndex] ? (
+            <span>
+              🚦 <strong>Step {activeStepIndex + 1}:</strong> {routeSteps[activeStepIndex].instruction}
+              {routeSteps[activeStepIndex].landmark && ` (near ${routeSteps[activeStepIndex].landmark})`}
+              {accessibleOnly && <span className="text-green" style={{ marginLeft: '6px', fontWeight: 600 }}>[Accessible Path]</span>}
+            </span>
+          ) : (
+            <>
+              {activeStepIndex === 0 && '🚦 Entrance Checkpoint: Proceed through Security lanes. Confirm wheelchair lane clearance on the right.'}
+              {activeStepIndex === 1 && '🛒 Escalator Deck: Use the lift corridor just past Food Court 2 to ascend to Level 2 Concourse.'}
+              {activeStepIndex === 2 && '🚪 Section Corridor: Section 114 entry deck is situated 25m past the First Aid medical station.'}
+              {activeStepIndex >= 3 && '⚽ Seating View: Your seat at Row C is adjacent to the main wheelchair platforms looking at the center circle.'}
+              {accessibleOnly && <span className="text-green" style={{ marginLeft: '6px', fontWeight: 600 }}>[Accessible Path]</span>}
+            </>
+          )}
         </p>
       </section>
     </div>

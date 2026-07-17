@@ -103,7 +103,7 @@ export function SocialWallPage() {
 
       setPosts((prev) => [...prev, newPost]);
       setInput('');
-    } catch (err) {
+    } catch {
       // Local fallback in case of errors
       const newPost: CheerPost = {
         id: `post-${Date.now()}`,
