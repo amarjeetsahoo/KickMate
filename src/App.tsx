@@ -5,8 +5,10 @@ import { AppHeader } from './components/layout/AppHeader';
 import { BottomNav } from './components/layout/BottomNav';
 import type { NavTab } from './components/layout/BottomNav';
 import { SOSButton } from './components/layout/SOSButton';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { notificationService } from './services/notificationService';
 import { NotificationPanel } from './components/layout/NotificationPanel';
+import { STADIUM_NAMES, PAGE_TITLES, DEFAULT_STADIUM_ID, NOTIFICATION_INTERVAL_MS } from './constants';
 import './styles/index.css';
 
 
@@ -51,22 +53,12 @@ function PageLoader() {
 
 function PageTitle({ tab, sosOpen }: { tab: NavTab; sosOpen: boolean }) {
   if (sosOpen) return { title: 'Emergency Help', subtitle: undefined };
-  const titles: Record<NavTab, { title: string; subtitle?: string }> = {
-    home:      { title: 'KickMate', subtitle: undefined },
-    navigate:  { title: 'Stadium Navigator', subtitle: storage.getStadium() === 'sofi' ? 'SoFi Stadium' : storage.getStadium() === 'atnt' ? 'AT&T Stadium' : 'MetLife Stadium' },
-    translate: { title: 'Translator', subtitle: undefined },
-    match:     { title: 'Live Match', subtitle: undefined },
-    social:    { title: 'Fan Wall', subtitle: undefined },
-    food:      { title: 'Food & Merch', subtitle: undefined },
-    more:      { title: 'More Features', subtitle: undefined },
-    parking:   { title: 'Parking Assistant', subtitle: undefined },
-    squads:    { title: 'Squad Explorer', subtitle: undefined },
-    archive:   { title: 'Historical Archive', subtitle: undefined },
-    simulator: { title: 'Match Simulator', subtitle: undefined },
-    eco:       { title: 'Eco Hub', subtitle: undefined },
-    admin:     { title: 'Admin Console', subtitle: undefined },
+  const stadiumId = storage.getStadium() || DEFAULT_STADIUM_ID;
+  const base = PAGE_TITLES[tab] || { title: 'KickMate' };
+  return {
+    ...base,
+    subtitle: tab === 'navigate' ? (STADIUM_NAMES[stadiumId] || STADIUM_NAMES[DEFAULT_STADIUM_ID]) : base.subtitle,
   };
-  return titles[tab];
 }
 
 
@@ -103,11 +95,11 @@ export default function App() {
     }
 
     const id = setInterval(() => {
-      const stadiumId = storage.getStadium() || 'sofi';
-      const stadiumName = stadiumId === 'sofi' ? 'SoFi Stadium' : stadiumId === 'atnt' ? 'AT&T Stadium' : 'MetLife Stadium';
+      const stadiumId = storage.getStadium() || DEFAULT_STADIUM_ID;
+      const stadiumName = STADIUM_NAMES[stadiumId] || STADIUM_NAMES[DEFAULT_STADIUM_ID];
       const language = storage.getLanguage() || 'English';
       notificationService.triggerRandomNotification(stadiumName, language);
-    }, 25000);
+    }, NOTIFICATION_INTERVAL_MS);
 
     return () => clearInterval(id);
   }, [appState]);
@@ -226,6 +218,7 @@ export default function App() {
 
       {/* Main Content */}
       <div className="page-content" id="main-content" tabIndex={-1}>
+        <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           {sosOpen ? (
             <SOSPage onClose={() => setSosOpen(false)} />
@@ -262,6 +255,7 @@ export default function App() {
             <FoodFinderPage />
           ) : null}
         </Suspense>
+        </ErrorBoundary>
       </div>
 
       {/* Smart Alerts overlay */}

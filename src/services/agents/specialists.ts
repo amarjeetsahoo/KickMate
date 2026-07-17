@@ -32,7 +32,12 @@ export async function navigatorNode(state: AgentState): Promise<AgentState> {
   }
 
   // Simulated path coordinates & steps
-  const steps: any[] = [];
+  interface RouteStep {
+    instruction: string;
+    landmark?: string;
+    floor?: number;
+  }
+  const steps: RouteStep[] = [];
   if (destType === 'seat') {
     steps.push(
       { instruction: 'Enter through Gate B', landmark: 'Security Checkpoint A', floor: 1 },

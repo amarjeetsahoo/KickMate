@@ -320,7 +320,7 @@ export class Stadium3DController {
 
     // 2. Animate route dashes flowing
     if (this.routeLine) {
-      const routeMat = this.routeLine.material as any;
+      const routeMat = this.routeLine.material as unknown as { dashOffset: number };
       routeMat.dashOffset = -time * 1.5;
     }
 

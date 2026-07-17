@@ -1,5 +1,18 @@
 import { useState, useRef, useCallback } from 'react';
 
+/** Minimal interface for the SpeechRecognition browser API */
+interface SpeechRecognitionInstance {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((event: { results: { [i: number]: { [j: number]: { transcript: string } } } }) => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
 interface UseSpeechOptions {
   lang?: string;
   onResult?: (transcript: string) => void;
@@ -13,10 +26,10 @@ interface UseSpeechOptions {
 export function useSpeech({ lang = 'en-US', onResult, onError }: UseSpeechOptions = {}) {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const recognitionRef = useRef<any | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   const isSupported = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
-  const SpeechRecognitionApi = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+  const SpeechRecognitionApi = (window as unknown as Record<string, unknown>).SpeechRecognition ?? (window as unknown as Record<string, unknown>).webkitSpeechRecognition;
 
   const startListening = useCallback(() => {
     if (!isSupported || !SpeechRecognitionApi) {
@@ -25,18 +38,18 @@ export function useSpeech({ lang = 'en-US', onResult, onError }: UseSpeechOption
     }
     if (isListening) return;
 
-    const recognition = new SpeechRecognitionApi();
+    const recognition = new (SpeechRecognitionApi as new () => SpeechRecognitionInstance)();
     recognition.lang = lang;
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       onResult?.(transcript);
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event) => {
       setIsListening(false);
       if (event.error !== 'aborted') {
         onError?.(event.error);
