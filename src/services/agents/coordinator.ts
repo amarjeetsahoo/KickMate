@@ -2,6 +2,9 @@ import { createInitialState, type AgentState } from './state';
 import { navigatorNode, operationsNode, translatorNode, matchNode } from './specialists';
 import { callGemini } from '../gemini';
 
+/** Maximum query length to prevent processing excessively long inputs */
+const MAX_QUERY_LENGTH = 500;
+
 /**
  * Supervisor agent that routes fan queries to the appropriate specialist agent.
  * Fallbacks to keyword matching if the LLM query fails or API key is absent.
@@ -72,7 +75,9 @@ export async function runMultiAgentSystem(
   stadiumId: string,
   language: string
 ): Promise<AgentState> {
-  let state = createInitialState(query, stadiumId, language);
+  // Guard against excessively long queries
+  const safeQuery = query.slice(0, MAX_QUERY_LENGTH).trim();
+  let state = createInitialState(safeQuery, stadiumId, language);
   
   // Phase 1: Supervisor Analysis
   state.currentNode = 'supervisor';

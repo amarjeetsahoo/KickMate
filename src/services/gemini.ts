@@ -7,6 +7,21 @@ const DEFAULT_MODEL = 'gemma-4-31b-it';
 const CHAT_MODEL = 'gemma-4-31b-it'; // Free open-weight model via AI Studio
 const TRANSLATE_MODEL = 'gemini-3.5-flash';
 
+/** Maximum characters allowed in a single user prompt to prevent abuse */
+const MAX_PROMPT_LENGTH = 2000;
+
+/**
+ * Sanitize a user-provided string before forwarding to the Gemini API.
+ * Strips control characters and truncates to MAX_PROMPT_LENGTH.
+ */
+function sanitizeInput(input: string): string {
+  return input
+    // Remove ASCII control characters (0x00-0x1F) except common whitespace
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    .trim()
+    .slice(0, MAX_PROMPT_LENGTH);
+}
+
 /** Simple rate limiter: max 10 requests per minute per session */
 const requestTimestamps: number[] = [];
 const RATE_LIMIT = 10;
@@ -59,7 +74,8 @@ export async function callGemini(req: GeminiRequest): Promise<GeminiResponse> {
     if (req.systemPrompt) {
       parts.push({ text: req.systemPrompt });
     }
-    parts.push({ text: req.prompt });
+    // Sanitize user prompt before sending to the API
+    parts.push({ text: sanitizeInput(req.prompt) });
 
     if (req.imageBase64) {
       parts.push({
@@ -110,8 +126,9 @@ export async function translateText(
   fromLang: string,
   toLang: string
 ): Promise<string> {
+  const safeText = sanitizeInput(text);
   const { text: result } = await callGemini({
-    prompt: `Translate the following text from ${fromLang} to ${toLang}. Return ONLY the translation, no explanations or additional text:\n\n"${text}"`,
+    prompt: `Translate the following text from ${fromLang} to ${toLang}. Return ONLY the translation, no explanations or additional text:\n\n"${safeText}"`,
     systemPrompt: 'You are a professional translator. Return only the translated text without any preamble.',
     model: TRANSLATE_MODEL,
   });
@@ -149,7 +166,7 @@ export async function askStadiumAssistant(
   language: string
 ): Promise<string> {
   const { text } = await callGemini({
-    prompt: question,
+    prompt: sanitizeInput(question),
     model: CHAT_MODEL,
     systemPrompt: `You are KickMate, a helpful AI fan companion for FIFA World Cup 2026 at ${stadium}. 
 Answer in ${language}. Keep responses concise (2-3 sentences max). 

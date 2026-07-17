@@ -174,6 +174,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
                 fontWeight: 600
               }}
               onClick={() => setActiveMode('text')}
+              aria-label="Switch to text input mode"
+              aria-pressed={activeMode === 'text'}
             >
               Text
             </button>
@@ -185,6 +187,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
                 fontWeight: 600
               }}
               onClick={() => setActiveMode('voice')}
+              aria-label="Switch to voice input mode"
+              aria-pressed={activeMode === 'voice'}
             >
               Voice
             </button>
@@ -201,6 +205,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
               onChange={(e) => setInputText(e.target.value)}
               className="input"
               style={{ flex: 1, height: '40px' }}
+              maxLength={500}
+              aria-label="Type your question for the AI assistant"
             />
             <button className="btn btn-green" type="submit" style={{ height: '40px', padding: '0 16px' }}>
               Ask

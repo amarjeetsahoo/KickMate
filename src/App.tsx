@@ -219,7 +219,7 @@ export default function App() {
         hasUnread={hasUnread}
         onToggleNotifications={() => setShowNotifications(!showNotifications)}
         onProfileClick={() => {
-          storage.setLoggedIn(false);
+          storage.logout();
           setAppState('landing');
         }}
       />

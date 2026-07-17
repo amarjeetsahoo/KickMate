@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { ShieldCheck, AlertTriangle, Send, Sparkles, MessageSquare } from 'lucide-react';
 import { callGemini } from '../services/gemini';
 import { loadUserProfile } from '../services/storage';
@@ -49,7 +49,7 @@ export function SocialWallPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const profile = loadUserProfile();
+  const profile = useMemo(() => loadUserProfile(), []);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });

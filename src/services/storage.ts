@@ -51,4 +51,9 @@ export const storage = {
   setLoggedIn: (v: boolean) => v
     ? localStorage.setItem('kickmate_logged_in', '1')
     : localStorage.removeItem('kickmate_logged_in'),
+  /** Clear all session data — call on logout */
+  logout: () => {
+    localStorage.removeItem('kickmate_logged_in');
+    localStorage.removeItem('kickmate_onboarded');
+  },
 };

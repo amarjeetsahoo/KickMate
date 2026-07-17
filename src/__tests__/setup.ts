@@ -26,6 +26,12 @@ Object.defineProperty(window, 'speechSynthesis', {
 
 // Mock SpeechRecognition
 (window as Window & { SpeechRecognition?: unknown }).SpeechRecognition = vi.fn(() => ({
+  lang: '',
+  interimResults: false,
+  maxAlternatives: 1,
+  onresult: null,
+  onerror: null,
+  onend: null,
   start: vi.fn(), stop: vi.fn(), abort: vi.fn(),
   addEventListener: vi.fn(), removeEventListener: vi.fn(),
 }));

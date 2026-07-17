@@ -8,10 +8,14 @@ import { STADIUMS } from '../../data/stadiums';
  * medical rooms, exits, or parking bays.
  */
 export async function navigatorNode(state: AgentState): Promise<AgentState> {
-  state.currentNode = 'navigator';
-  state.executionTrace.push('navigator');
+  const nextState = { 
+    ...state, 
+    currentNode: 'navigator', 
+    executionTrace: [...state.executionTrace, 'navigator'],
+    context: { ...state.context }
+  };
 
-  const query = state.query.toLowerCase();
+  const query = nextState.query.toLowerCase();
   const stadium = STADIUMS.find(s => s.id === state.stadiumId) || STADIUMS[0];
   let destType: 'seat' | 'food' | 'toilet' | 'medical' | 'exit' | 'parking' = 'seat';
 
@@ -67,7 +71,7 @@ export async function navigatorNode(state: AgentState): Promise<AgentState> {
     );
   }
 
-  state.context.routePath = steps.map(s => ({
+  nextState.context.routePath = steps.map(s => ({
     instruction: s.instruction,
     landmark: s.landmark,
     floor: s.floor,
@@ -81,16 +85,16 @@ export async function navigatorNode(state: AgentState): Promise<AgentState> {
     const res = await callGemini({ prompt, systemPrompt });
 
     if (res.text && !res.error) {
-      state.output = `🧭 Navigator Agent:\n${res.text}`;
-      return state;
+      nextState.output = `🧭 Navigator Agent:\n${res.text}`;
+      return nextState;
     }
   } catch {
     // Ignore and use fallback
   }
 
   // Fallback output
-  state.output = `🧭 Navigator Agent:\nI've calculated your route to the nearest ${destType} at ${stadium.name}. Enter through Gate B, proceed to the concourse level, and follow the directional signage. See the step-by-step path below for guidance!`;
-  return state;
+  nextState.output = `🧭 Navigator Agent:\nI've calculated your route to the nearest ${destType} at ${stadium.name}. Enter through Gate B, proceed to the concourse level, and follow the directional signage. See the step-by-step path below for guidance!`;
+  return nextState;
 }
 
 /**
@@ -98,10 +102,14 @@ export async function navigatorNode(state: AgentState): Promise<AgentState> {
  * and emergency reporting logs.
  */
 export async function operationsNode(state: AgentState): Promise<AgentState> {
-  state.currentNode = 'operations';
-  state.executionTrace.push('operations');
+  const nextState = {
+    ...state,
+    currentNode: 'operations',
+    executionTrace: [...state.executionTrace, 'operations'],
+    context: { ...state.context }
+  };
 
-  const query = state.query.toLowerCase();
+  const query = nextState.query.toLowerCase();
   let type: 'medical' | 'spill' | 'security' | 'general' = 'general';
 
   if (query.includes('spill') || query.includes('cleanup') || query.includes('dirty') || query.includes('mess') || query.includes('clean')) {
@@ -112,7 +120,7 @@ export async function operationsNode(state: AgentState): Promise<AgentState> {
     type = 'security';
   }
 
-  state.context.dispatchStatus = {
+  nextState.context.dispatchStatus = {
     type,
     status: 'pending',
     etaMinutes: type === 'medical' ? 2 : type === 'security' ? 3 : 5,
@@ -125,8 +133,8 @@ export async function operationsNode(state: AgentState): Promise<AgentState> {
     const res = await callGemini({ prompt, systemPrompt });
 
     if (res.text && !res.error) {
-      state.output = `🆘 Operations Agent:\n${res.text}`;
-      return state;
+      nextState.output = `🆘 Operations Agent:\n${res.text}`;
+      return nextState;
     }
   } catch {
     // Fallback
@@ -139,8 +147,8 @@ export async function operationsNode(state: AgentState): Promise<AgentState> {
     general: 'assistance request',
   };
 
-  state.output = `🆘 Operations Agent:\nYour ${alertLabels[type]} has been received. Our ${state.context.dispatchStatus.assignedCrew} is on route and will arrive in approximately ${state.context.dispatchStatus.etaMinutes} minutes. Please stay calm and look for staff in red/yellow vests.`;
-  return state;
+  nextState.output = `🆘 Operations Agent:\nYour ${alertLabels[type]} has been received. Our ${nextState.context.dispatchStatus.assignedCrew} is on route and will arrive in approximately ${nextState.context.dispatchStatus.etaMinutes} minutes. Please stay calm and look for staff in red/yellow vests.`;
+  return nextState;
 }
 
 /**
@@ -148,8 +156,12 @@ export async function operationsNode(state: AgentState): Promise<AgentState> {
  * and outputs text formatted for speech synthesis.
  */
 export async function translatorNode(state: AgentState): Promise<AgentState> {
-  state.currentNode = 'translator';
-  state.executionTrace.push('translator');
+  const nextState = {
+    ...state,
+    currentNode: 'translator',
+    executionTrace: [...state.executionTrace, 'translator'],
+    context: { ...state.context }
+  };
 
   let jargonExplanation = '';
 
@@ -180,34 +192,38 @@ export async function translatorNode(state: AgentState): Promise<AgentState> {
     const res = await callGemini({ prompt, systemPrompt });
 
     if (res.text && !res.error) {
-      state.context.translationResult = {
+      nextState.context.translationResult = {
         translatedText: res.text.trim(),
         jargonExplained: jargonExplanation || undefined,
       };
-      state.output = `🌐 Translator Agent:\n"${res.text.trim()}"\n\n${jargonExplanation}`;
-      return state;
+      nextState.output = `🌐 Translator Agent:\n"${res.text.trim()}"\n\n${jargonExplanation}`;
+      return nextState;
     }
   } catch {
     // Fallback
   }
 
   // Simple static translation fallback for common queries
-  const translated = state.query; // Mock translation (echo back)
-  state.context.translationResult = {
+  const translated = nextState.query; // Mock translation (echo back)
+  nextState.context.translationResult = {
     translatedText: translated,
     jargonExplained: jargonExplanation || undefined,
   };
 
-  state.output = `🌐 Translator Agent:\n"${translated}"\n\n${jargonExplanation}`;
-  return state;
+  nextState.output = `🌐 Translator Agent:\n"${translated}"\n\n${jargonExplanation}`;
+  return nextState;
 }
 
 /**
  * Match Node: Summarizes live scores, events, scorers, and stats.
  */
 export async function matchNode(state: AgentState): Promise<AgentState> {
-  state.currentNode = 'match';
-  state.executionTrace.push('match');
+  const nextState = {
+    ...state,
+    currentNode: 'match',
+    executionTrace: [...state.executionTrace, 'match'],
+    context: { ...state.context }
+  };
 
   const match = MOCK_LIVE_MATCH;
 
@@ -222,13 +238,13 @@ Write a very brief, exciting, commentator-style update answering the query (max 
     const res = await callGemini({ prompt, systemPrompt });
 
     if (res.text && !res.error) {
-      state.output = `⚽ Match Commentator:\n${res.text}`;
-      return state;
+      nextState.output = `⚽ Match Commentator:\n${res.text}`;
+      return nextState;
     }
   } catch {
     // Fallback
   }
 
-  state.output = `⚽ Match Commentator:\nIt's a heated match here! Brazil ${match.homeTeam.score} – ${match.awayTeam.score} Argentina in the ${match.minute}th minute. Neymar scored in the 38th, while Messi pulled one back in the 67th. Possession is ${match.stats.possession.home}% to ${match.stats.possession.away}% in favor of Brazil!`;
-  return state;
+  nextState.output = `⚽ Match Commentator:\nIt's a heated match here! Brazil ${match.homeTeam.score} – ${match.awayTeam.score} Argentina in the ${match.minute}th minute. Neymar scored in the 38th, while Messi pulled one back in the 67th. Possession is ${match.stats.possession.home}% to ${match.stats.possession.away}% in favor of Brazil!`;
+  return nextState;
 }

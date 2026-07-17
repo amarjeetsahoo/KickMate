@@ -77,6 +77,9 @@ let activeNotifications: AppNotification[] = [
 
 let listeners: Array<(notifications: AppNotification[]) => void> = [];
 
+/** Maximum number of notifications stored in memory at any time */
+const MAX_NOTIFICATIONS = 100;
+
 function notifyListeners() {
   listeners.forEach((l) => l([...activeNotifications]));
 }
@@ -111,6 +114,12 @@ export const notificationService = {
     notifyListeners();
   },
 
+  /** Remove a single notification by id */
+  dismiss(id: string) {
+    activeNotifications = activeNotifications.filter((n) => n.id !== id);
+    notifyListeners();
+  },
+
   async triggerRandomNotification(stadiumName: string, targetLanguage: string) {
     const template = MOCK_NOTIFICATIONS_TEMPLATES[Math.floor(Math.random() * MOCK_NOTIFICATIONS_TEMPLATES.length)];
     
@@ -142,7 +151,7 @@ export const notificationService = {
       read: false,
     };
 
-    activeNotifications = [newNotification, ...activeNotifications];
+    activeNotifications = [newNotification, ...activeNotifications].slice(0, MAX_NOTIFICATIONS);
     notifyListeners();
 
     // Trigger standard browser notification if permission granted

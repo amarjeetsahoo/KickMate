@@ -31,11 +31,32 @@ export function speakText(text: string, lang: string = 'en-US') {
 // ─── Speech-to-Text (STT) ───────────────────────────────────────────────────
 
 // Extend Window interface for standard and webkit prefixes
+interface KickMateSpeechRecognition {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((event: SpeechResult) => void) | null;
+  onerror: ((event: SpeechError) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
 declare global {
   interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
+    SpeechRecognition: new () => KickMateSpeechRecognition;
+    webkitSpeechRecognition: new () => KickMateSpeechRecognition;
   }
+}
+
+/** Shape of the SpeechRecognitionEvent result we consume */
+interface SpeechResult {
+  results: { [index: number]: { [index: number]: { transcript: string } }; length: number };
+}
+
+/** Shape of the SpeechRecognitionErrorEvent we consume */
+interface SpeechError {
+  error: string;
 }
 
 export function listenForSpeech(
@@ -56,12 +77,12 @@ export function listenForSpeech(
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
 
-  recognition.onresult = (event: any) => {
+  recognition.onresult = (event: SpeechResult) => {
     const transcript = event.results[0][0].transcript;
     onResult(transcript);
   };
 
-  recognition.onerror = (event: any) => {
+  recognition.onerror = (event: SpeechError) => {
     console.error('Speech recognition error:', event.error);
     onError(event.error);
   };
